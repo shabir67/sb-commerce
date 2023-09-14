@@ -12,15 +12,15 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-//    @Value("${app.eureka.username")
-//    private String username;
-//    @Value("${app.eureka.password}")
-//    private String password;
+    @Value("${spring.security.user.username}")
+    private String username;
+    @Value("${spring.security.user.password}")
+    private String password;
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         UserDetails user = User.withDefaultPasswordEncoder()
-                .username("username")
-                .password("password")
+                .username(username)
+                .password(password)
                 .roles("USER")
                 .build();
         auth.inMemoryAuthentication()
