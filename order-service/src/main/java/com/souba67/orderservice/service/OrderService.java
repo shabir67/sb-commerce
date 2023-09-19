@@ -49,7 +49,6 @@ public class OrderService {
         try(Tracer.SpanInScope spanInScope = tracer.withSpan(inventoryServiceLookUp.start())) {
 
             inventoryServiceLookUp.tag("call", "inventory-service");
-
             // Call Inventory Service, and place order if product is in
             // stock
             InventoryResponse[] inventoryResponsArray = webClientBuilder.build().get()
@@ -72,7 +71,6 @@ public class OrderService {
         } finally {
             inventoryServiceLookUp.end();
         }
-
     }
 
     private OrderLineItems mapToDto(OrderLineItemsDto orderLineItemsDto) {
