@@ -1,5 +1,7 @@
 package com.souba67.orderservice.service;
 
+import brave.Span;
+import brave.Tracer;
 import com.souba67.orderservice.dto.InventoryResponse;
 import com.souba67.orderservice.dto.OrderLineItemsDto;
 import com.souba67.orderservice.dto.OrderRequest;
@@ -7,9 +9,8 @@ import com.souba67.orderservice.event.OrderPlacedEvent;
 import com.souba67.orderservice.model.Order;
 import com.souba67.orderservice.model.OrderLineItems;
 import com.souba67.orderservice.repository.OrderRepository;
+import io.micrometer.observation.Observation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.sleuth.Span;
-import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,11 +45,11 @@ public class OrderService {
                 .map(OrderLineItems::getSkuCode)
                 .toList();
 
-        Span inventoryServiceLookUp = tracer.nextSpan().name("InventoryServiceLookUp");
+        Span inventoryServiceLookup = tracer.nextSpan().name("InventoryServiceLookup");
 
-        try(Tracer.SpanInScope spanInScope = tracer.withSpan(inventoryServiceLookUp.start())) {
+        try(Tracer.SpanInScope spanInScope = tracer.withSpanInScope(inventoryServiceLookup.start())) {
 
-            inventoryServiceLookUp.tag("call", "inventory-service");
+            inventoryServiceLookup.tag("call", "inventory-service");
             // Call Inventory Service, and place order if product is in
             // stock
             InventoryResponse[] inventoryResponsArray = webClientBuilder.build().get()
@@ -69,7 +70,7 @@ public class OrderService {
                 throw new IllegalArgumentException("Product is not in stock, please try again later");
             }
         } finally {
-            inventoryServiceLookUp.end();
+            inventoryServiceLookup.flush();
         }
     }
 
